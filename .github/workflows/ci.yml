@@ -32,5 +32,3 @@ jobs:
               uses: actions/setup-node@v4
               with: # passa as propriedades
                 node-version: 24
-                cache: 'pnpm'
-                cache-dependency-path: '**/pnpm-lock-yml'
