@@ -22,10 +22,13 @@ export class UserController {
     public static async show(req: Request, res: Response) : Promise<Response> {
         try {
 
-            const { id } = req.params;
+            const id = parseInt(req.params.id as string, 10);
+            if (isNaN(id) || id <= 0) {
+                return res.status(400).json({ erro: 'O ID informado deve ser um núemero válido.'})
+            }
             
-            const user = await User.findByPk(Number(id), {
-                attributes: ['id', 'nome', 'email', 'createdAt', 'updatedAt']
+            const user = await User.findByPk(id, {
+                attributes: ['id', 'nome', 'email', 'createdAt']
             });
 
             if (!user) {
@@ -45,11 +48,34 @@ export class UserController {
 
             const { nome, email, senha_hash } = req.body;
 
-             if (!nome || !email || !senha_hash) {
+            if (!nome || !email || !senha_hash) {
                 return res.status(400).json({ erro: "Os campos nome, email e senha são obrigatórios."})
             }
+
+            if (!nome || typeof nome !== 'string' || nome.trim() === '') {
+                return res.status(400).json({ erro: 'O campo é obrigatório.'});
+            }
+
+            // email (regex -> código que testa várias coisas ao mesmo tempo)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email.trim())) {
+                return res.status(400).json({ erro: 'Informe um e-mail válido.'})
+            }
+
+            if (!senha_hash || typeof senha_hash !== 'string' || senha_hash.length < 6) {
+                return res.status(400).json({ erro: 'A senha deve copngter no mínimo 6 caracteres.'});
+            }
+
+            const userExistente = await User.findOne({ where: { email: email.trim() }});
+            if (userExistente) {
+                return res.status(400).json({ erro: "Já existe um usuário cadastrado com este e-mail."})
+            }
             
-            const novoUser = await User.create({ nome, email, senha_hash });
+            const novoUser = await User.create({ 
+                nome: nome.trim(),
+                email: email.trim().toLowerCase(),
+                senha_hash 
+            });
 
             return res.status(201).json({ // basta apenas criar o status created
                 id: novoUser.id,

@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ### Buscar usuário por ID 
-GET http://localhost:3000/api/users/1
+GET http://localhost:3000/api/users/5
 
 ### Atualizar usuário
 PUT http://localhost:3000/api/users/1
