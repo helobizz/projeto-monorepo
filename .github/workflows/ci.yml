@@ -33,4 +33,4 @@ jobs:
               with: # passa as propriedades
                 node-version: 24
                 cache: 'pnpm'
-                cache-dependecy-path: '**/pnpm-lock-yml'
+                cache-dependency-path: '**/pnpm-lock-yml'
