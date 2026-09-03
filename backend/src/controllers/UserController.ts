@@ -1,144 +1,156 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/User';
-import { noDeprecation } from 'node:process';
 
 export class UserController {
-    // GET /api/users - Lista todos os usuários
-    public static async index(req: Request, res: Response) : Promise<Response> {
-        try {
+  // GET /api/users - Lista todos os usuários
+  public static async index(req: Request, res: Response): Promise<Response> {
+    try {
+      const users = await User.findAll({
+        attributes: ['id', 'nome', 'email', 'createdAt', 'updatedAt'],
+      });
 
-            const users = await User.findAll({
-                attributes: ['id', 'nome', 'email', 'createdAt', 'updatedAt']
-            });
-
-            return res.status(200).json(users);
-
-        } catch (error : any) {
-            return res.status(500).json({ erro: 'Erro ao listar usuários.', detalhe: error.message })
-        }
+      return res.status(200).json(users);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ erro: 'Erro ao listar usuários.', detalhe: error.message });
     }
+  }
 
-    // GET /api/users/:id - Busca 1 usuário por id
-    public static async show(req: Request, res: Response) : Promise<Response> {
-        try {
+  // GET /api/users/:id - Busca 1 usuário por id
+  public static async show(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = parseInt(req.params.id as string, 10);
+      if (isNaN(id) || id <= 0) {
+        return res
+          .status(400)
+          .json({ erro: 'O ID informado deve ser um núemero válido.' });
+      }
 
-            const id = parseInt(req.params.id as string, 10);
-            if (isNaN(id) || id <= 0) {
-                return res.status(400).json({ erro: 'O ID informado deve ser um núemero válido.'})
-            }
-            
-            const user = await User.findByPk(id, {
-                attributes: ['id', 'nome', 'email', 'createdAt']
-            });
+      const user = await User.findByPk(id, {
+        attributes: ['id', 'nome', 'email', 'createdAt'],
+      });
 
-            if (!user) {
-                return res.status(404).json({ erro: "Usuário não encontrado."})
-            }
+      if (!user) {
+        return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      }
 
-            return res.status(200).json(user);
-
-        } catch (error : any) {
-            return res.status(500).json({ erro: 'Erro ao buscar usuários.', detalhe: error.message })
-        }
+      return res.status(200).json(user);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ erro: 'Erro ao buscar usuários.', detalhe: error.message });
     }
+  }
 
-    // POST /api/users - Cadastrar um novo usuário
-    public static async create(req: Request, res: Response) : Promise<Response> {
-        try {
+  // POST /api/users - Cadastrar um novo usuário
+  public static async create(req: Request, res: Response): Promise<Response> {
+    try {
+      const { nome, email, password } = req.body;
 
-            const { nome, email, password } = req.body;
+      if (!nome || !email || !password) {
+        return res
+          .status(400)
+          .json({ erro: 'Os campos nome, email e senha são obrigatórios.' });
+      }
 
-            if (!nome || !email || !password) {
-                return res.status(400).json({ erro: "Os campos nome, email e senha são obrigatórios."})
-            }
+      if (!nome || typeof nome !== 'string' || nome.trim() === '') {
+        return res.status(400).json({ erro: 'O campo é obrigatório.' });
+      }
 
-            if (!nome || typeof nome !== 'string' || nome.trim() === '') {
-                return res.status(400).json({ erro: 'O campo é obrigatório.'});
-            }
+      // email (regex -> código que testa várias coisas ao mesmo tempo)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email.trim())) {
+        return res.status(400).json({ erro: 'Informe um e-mail válido.' });
+      }
 
-            // email (regex -> código que testa várias coisas ao mesmo tempo)
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email || !emailRegex.test(email.trim())) {
-                return res.status(400).json({ erro: 'Informe um e-mail válido.'})
-            }
+      if (!password || typeof password !== 'string' || password.length < 6) {
+        return res
+          .status(400)
+          .json({ erro: 'A senha deve copngter no mínimo 6 caracteres.' });
+      }
 
-            if (!password || typeof password !== 'string' || password.length < 6) {
-                return res.status(400).json({ erro: 'A senha deve copngter no mínimo 6 caracteres.'});
-            }
+      const userExistente = await User.findOne({
+        where: { email: email.trim() },
+      });
+      if (userExistente) {
+        return res
+          .status(400)
+          .json({ erro: 'Já existe um usuário cadastrado com este e-mail.' });
+      }
 
-            const userExistente = await User.findOne({ where: { email: email.trim() }});
-            if (userExistente) {
-                return res.status(400).json({ erro: "Já existe um usuário cadastrado com este e-mail."})
-            }
+      const senha_hash = await bcrypt.hash(password, 10);
 
-            const senha_hash = await bcrypt.hash(password, 10);
-            
-            const novoUser = await User.create({ 
-                nome: nome.trim(),
-                email: email.trim().toLowerCase(),
-                senha_hash 
-            });
+      const novoUser = await User.create({
+        nome: nome.trim(),
+        email: email.trim().toLowerCase(),
+        senha_hash,
+      });
 
-            return res.status(201).json({ // basta apenas criar o status created
-                id: novoUser.id,
-                nome: novoUser.nome,
-                email: novoUser.email,
-                createdAt: novoUser.createdAt
-            });
-
-        } catch (error : any) {
-            return res.status(500).json({ erro: 'Erro ao cadastrar usuários.', detalhe: error.message })
-        }
+      return res.status(201).json({
+        // basta apenas criar o status created
+        id: novoUser.id,
+        nome: novoUser.nome,
+        email: novoUser.email,
+        createdAt: novoUser.createdAt,
+      });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ erro: 'Erro ao cadastrar usuários.', detalhe: error.message });
     }
+  }
 
-    // PUT /api/users/:id - Atualiza um usuário existente
-    public static async update(req: Request, res: Response) : Promise<Response> {
-        try {
-            const { id } = req.params;
-            const { nome, email } = req.body;
-            
-            const user = await User.findByPk(Number(id))
+  // PUT /api/users/:id - Atualiza um usuário existente
+  public static async update(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      const { nome, email } = req.body;
 
-            if (!user) {
-                return res.status(404).json({ erro: "Usuário não encontrado."})
-            }
+      const user = await User.findByPk(Number(id));
 
-            if (nome) user.nome = nome;
-            if (email) user.email = email
+      if (!user) {
+        return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      }
 
-            await user.save()
+      if (nome) user.nome = nome;
+      if (email) user.email = email;
 
-            return res.status(200).json({ 
-                id: user.id,
-                nome: user.nome,
-                email: user.email,
-                createdAt: user.createdAt
-            });
+      await user.save();
 
-        } catch (error : any) {
-            return res.status(500).json({ erro: 'Erro ao atualizar usuários.', detalhe: error.message })
-        }
+      return res.status(200).json({
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        createdAt: user.createdAt,
+      });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ erro: 'Erro ao atualizar usuários.', detalhe: error.message });
     }
+  }
 
-    // DELETE /api/users/:id - DELETA UM USUÁRIO
-    public static async delete(req: Request, res: Response) : Promise<Response> {
-        try {
-            const { id } = req.params;
-            
-            const user = await User.findByPk(Number(id))
+  // DELETE /api/users/:id - DELETA UM USUÁRIO
+  public static async delete(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
 
-            if (!user) {
-                return res.status(404).json({ erro: "Usuário não encontrado."})
-            }
+      const user = await User.findByPk(Number(id));
 
-            await user.destroy();
+      if (!user) {
+        return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      }
 
-            // 204 No content
-            return res.status(204).send();
+      await user.destroy();
 
-        } catch (error : any) {
-            return res.status(500).json({ erro: 'Erro ao excluir usuário.', detalhe: error.message })
-        }
+      // 204 No content
+      return res.status(204).send();
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ erro: 'Erro ao excluir usuário.', detalhe: error.message });
     }
+  }
 }
