@@ -1,66 +1,76 @@
-# define o nome 
+# define o nome
 name: Monorepo CI Pipeline
 
-# Precisa do on para rodar 
+# Precisa do on para rodar
 on:
-    # Dispara automaticamente ao enviar novos commits para a branch main
-    push:
-        branches:
-            - main
-    # Dispara na abertura ou atualização de pull requests direcionados para a branch main (sequencial)
-    pull_request:
-        branches:
-            - main
-    # Permite execução manual pelo painél web do Github (aba Actions -> Run workflow)
-    workflow_dispatch:
+  # Dispara automaticamente ao enviar novos commits para a branch main
+  push:
+    branches:
+      - main
+  # Dispara na abertura ou atualização de pull requests direcionados para a branch main (sequencial)
+  pull_request:
+    branches:
+      - main
+  # Permite execução manual pelo painél web do Github (aba Actions -> Run workflow)
+  workflow_dispatch:
 
 jobs:
-    validar_monorepo: # nome 
-        name: Validar Backend, Frontend e Docker # aparece nos logs
-        runs-on: ubuntu-latest # versão da MV
+  validar_monorepo: # nome
+    name: Validar Backend, Frontend e Docker # aparece nos logs
+    runs-on: ubuntu-latest # versão da MV
 
-        steps: # etapas
-            - name: 1. Baixar o codigo fonte
-              uses: actions/checkout@v4 # repositório com algumas configurações "prontas" (o use actions que já estão prontas)
+    steps: # etapas
+      - name: 1. Baixar o codigo fonte
+        uses: actions/checkout@v4 # repositório com algumas configurações "prontas" (o use actions que já estão prontas)
 
-            - name: 2. Habilitar o pnpm
-              uses: pnpm/action-setup@v4 
-              with: 
-                version: 11
+      - name: 2. Habilitar o pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
 
-            - name: 3. Configurar o Node.js 24 com Cache de Dependencias
-              uses: actions/setup-node@v4
-              with: # passa as propriedades
-                node-version: 24
+      - name: 3. Configurar o Node.js 24 com Cache de Dependencias
+        uses: actions/setup-node@v4
+        with: # passa as propriedades
+          node-version: 24
 
-            - name: 4. Instalar dependências do Backend
-              run: | # rodar um comando que ainda não "existe"
-                cd backend
-                pnpm install --frozen-lockfile
+      - name: 4. Instalar dependências do Backend
+        run: | # rodar um comando que ainda não "existe"
+          cd backend
+          pnpm install --frozen-lockfile
 
-            - name: 5. Validar Tipos e Compilar o Backend (Express)
-              run: |
-                cd backend
-                pnpm run build
+      - name: 5. Validar padronização de Código (ESlint)
+        run: |
+          cd backend
+          pnpm run lint
 
-            - name: 6. Validar construção da Imagem Docker da API
-              run: |
-                docker build -t api-service:test ./backend
+      - name: 6. Validar Formatação de arquivos (Prettier)
+        run: |
+          cd backend
+          pnpm run build
 
-            - name: 7. Validar Frontend (quando presente no monorepo)
-              run: |
-                if [ -d "app"]; then
-                  echo "subprojeto frontend encontrado. Iniciando validação..."
-                  cd app
-                  pnpm install --frozen-lockfile
-                  pnpm run build
-                  docker build -t app-service: ./app
-                else
-                  echo "Subprojeto app ainda não adicionado ao monorepo."
-                fi
+      - name: 7. Validar Tipos e Compilar o Backend (Express)
+        run: |
+          cd backend
+          pnpm run build
 
-            - name: 8. Resumo da execução 
-              run: |
-                echo "Integração Contínua concluída com sucesso!"
-                echo "Autor da alteração: ${{ github.actor }}"
-                echo "Commit validado: ${{ github.sha }}"
+      - name: 8. Validar construção da Imagem Docker da API
+        run: |
+          docker build -t api-service:test ./backend
+
+      - name: 9. Validar Frontend (quando presente no monorepo)
+        run: |
+          if [ -d "app"]; then
+            echo "subprojeto frontend encontrado. Iniciando validação..."
+            cd app
+            pnpm install --frozen-lockfile
+            pnpm run build
+            docker build -t app-service: ./app
+          else
+            echo "Subprojeto app ainda não adicionado ao monorepo."
+          fi
+
+      - name: 10. Resumo da execução
+        run: |
+          echo "Integração Contínua concluída com sucesso!"
+          echo "Autor da alteração: ${{ github.actor }}"
+          echo "Commit validado: ${{ github.sha }}"
