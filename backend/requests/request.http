@@ -10,15 +10,15 @@ Content-Type: application/json
 
 {
     "nome": "Mariana Souza",
-    "email": "mariana@email.com",
-    "senha_hash": "1234"
+    "email": "mariana.souza@email.com",
+    "password": "12345678"
 }
 
 ### Buscar usuário por ID 
-GET http://localhost:3000/api/users/5
+GET http://localhost:3000/api/users/7
 
 ### Atualizar usuário
-PUT http://localhost:3000/api/users/1
+PUT http://localhost:3000/api/users/7
 Content-Type: application/json
 
 {

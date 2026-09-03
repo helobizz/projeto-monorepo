@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { User } from '../models/User';
 import { noDeprecation } from 'node:process';
 
@@ -46,9 +47,9 @@ export class UserController {
     public static async create(req: Request, res: Response) : Promise<Response> {
         try {
 
-            const { nome, email, senha_hash } = req.body;
+            const { nome, email, password } = req.body;
 
-            if (!nome || !email || !senha_hash) {
+            if (!nome || !email || !password) {
                 return res.status(400).json({ erro: "Os campos nome, email e senha são obrigatórios."})
             }
 
@@ -62,7 +63,7 @@ export class UserController {
                 return res.status(400).json({ erro: 'Informe um e-mail válido.'})
             }
 
-            if (!senha_hash || typeof senha_hash !== 'string' || senha_hash.length < 6) {
+            if (!password || typeof password !== 'string' || password.length < 6) {
                 return res.status(400).json({ erro: 'A senha deve copngter no mínimo 6 caracteres.'});
             }
 
@@ -70,6 +71,8 @@ export class UserController {
             if (userExistente) {
                 return res.status(400).json({ erro: "Já existe um usuário cadastrado com este e-mail."})
             }
+
+            const senha_hash = await bcrypt.hash(password, 10);
             
             const novoUser = await User.create({ 
                 nome: nome.trim(),
