@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   isValidEmail,
   isStrongPassword,
-  validateUserInput,
-  UserInput,
+  //validateUserInput,
+  //UserInput,
 } from './validators';
 
 describe('Módulo de Validação: validators.ts', () => {

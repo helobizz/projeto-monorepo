@@ -29,6 +29,9 @@ services:
       - DB_SSL=false # roda localmente, não no supabase
       - NODE_ENV=development
       - CI=true
+      # habilitar o polling para detectar alterações de arquivos no windows (soluciona problemas de acesso)
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=500
     depends_on:
       - db
     volumes:
