@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export interface ButtonProps {
   children: ReactNode;
-  variant?: "primary" | "secundary" | "danger";
+  variant?: "primary" | "secondary" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   disabled?: boolean;

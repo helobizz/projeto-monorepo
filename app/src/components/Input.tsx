@@ -6,7 +6,7 @@ export interface InputProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   type?: "text" | "email" | "password" | "number";
   placeholder?: string;
-  error: string;
+  error?: string;
   helperText?: string;
   required?: boolean;
 }
@@ -41,18 +41,20 @@ export function Input({
         placeholder={placeholder}
         required={required}
         style={{
-          padding: '8px 12px',
-          borderRadius: '6px',
-          border: `1px solid ${error ? '#dc2626': '#ffffff'}`,
+          padding: "8px 12px",
+          borderRadius: "6px",
+          border: `1px solid ${error ? "#dc2626" : "#d1d5db"}`,
           outline: "none",
           fontSize: "1rem",
-          transition: "border-color 0.2s"
+          transition: "border-color 0.2s",
         }}
       />
       {error ? (
-        <span style={{fontSize: "0.8rem", color: "#dc2626"}}>{error}</span>
+        <span style={{ fontSize: "0.8rem", color: "#dc2626" }}>{error}</span>
       ) : helperText ? (
-        <span style={{fontSize: "0.8rem", color: "#6b7280"}}>{helperText}</span>
+        <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
+          {helperText}
+        </span>
       ) : null}
     </div>
   );
