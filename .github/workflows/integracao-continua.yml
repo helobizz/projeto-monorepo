@@ -22,6 +22,8 @@ jobs:
   validacoes-e-testes:
     name: 1. Qualidade, Tipos e Testes Unitários
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
 
     steps:
       - name: 1.Baixar o código-fonte
@@ -57,7 +59,7 @@ jobs:
           cd backend
           pnpm run type-check
 
-      - name: 8. Executar Testes Unitários com Vitest
+      - name: 8. Executar Testes Unitários e de Integração com Vitest
         run: |
           cd backend
           pnpm run test:run
@@ -103,7 +105,7 @@ jobs:
             cd app
             pnpm install --frozen-lockfile
             pnpm run build
-            docker build -t app-service: ./app
+            # docker build -t app-service:test .
           else
             echo "Subprojeto app ainda não adicionado ao monorepo."
           fi

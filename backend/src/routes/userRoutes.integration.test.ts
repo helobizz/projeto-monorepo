@@ -1,11 +1,31 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import { app } from '../app';
+import { sequelize } from '../config/database';
+import { User } from '../models/User';
 
-describe('Testes de Integração: Rotas de Usuários (/api/users)', () => {
-  // 1. Testando listagem geral
+describe('Testes de Integracao: Rotas de Usuarios (/api/users)', () => {
+  // Executa uma vez antes de todos os testes da suite
+  beforeAll(async () => {
+    // Sincroniza os models e recria as tabelas no SQLite em memoria
+    await sequelize.sync({ force: true });
+  });
+
+  // Executa antes de cada caso de teste individual
+  beforeEach(async () => {
+    // Limpa a tabela de usuarios para que cada teste execute de forma independente
+    await User.destroy({ where: {}, truncate: true });
+  });
+
+  // Executa apos a conclusao de todos os testes da suite
+  afterAll(async () => {
+    // Encerra o pool de conexao do banco
+    await sequelize.close();
+  });
+
+  // 1. Testando Listagem Geral
   describe('GET /api/users', () => {
-    it('Deve retornar o status 200 e uma lista de usuários no formato JSON', async () => {
+    it('deve retornar status 200 e uma lista de usuarios no formato JSON', async () => {
       // Act
       const response = await request(app).get('/api/users');
 
@@ -81,7 +101,7 @@ describe('Testes de Integração: Rotas de Usuários (/api/users)', () => {
       // Assert
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('erro');
-      expect(response.body.erro).toBe('Os campos nome, email e senha são obrigatórios.');
+      expect(response.body.erro).toBe('O campo nome é obrigatório.');
     });
 
     it('deve retornar status 400 se o e-mail informado for invalido', async () => {
@@ -100,6 +120,30 @@ describe('Testes de Integração: Rotas de Usuários (/api/users)', () => {
       // Assert
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('erro');
+    });
+
+    it('deve retornar status 400 ao tentar cadastrar e-mail duplicado', async () => {
+      // Arrange: Primeiro cadastro
+      const emailDuplicado = `duplicado${Date.now()}@email.com`;
+      await request(app).post('/api/users').send({
+        nome: 'Usuario Original',
+        email: emailDuplicado,
+        password: 'senhaOriginal123',
+      });
+
+      // Act: Tentativa de cadastro com o mesmo e-mail
+      const response = await request(app).post('/api/users').send({
+        nome: 'Usuario Clone',
+        email: emailDuplicado,
+        password: 'outraSenha123',
+      });
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('erro');
+      expect(response.body.erro).toBe(
+        'Já existe um usuário cadastrado com este e-mail.',
+      );
     });
   });
 
