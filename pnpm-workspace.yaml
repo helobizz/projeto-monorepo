@@ -1,8 +1,8 @@
 packages:
-  - 'backend'
-  - 'app'
+  - "backend"
+  - "app"
 
 allowBuilds:
   sqlite3: true
   esbuild: true
-  '@scarf/scarf': false
+  "@scarf/scarf": false

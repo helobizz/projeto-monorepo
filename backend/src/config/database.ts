@@ -24,5 +24,5 @@ export const sequelize = isTestEnvironment
             ? { ssl: { require: true, rejectUnauthorized: false } }
             : {},
         logging: false,
-      }
+      },
     );

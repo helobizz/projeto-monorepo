@@ -23,8 +23,18 @@ describe('Testes de Rotas com Mocking do Model User', () => {
   it('GET /api/users - deve retornar lista mockada de usuarios com status 200', async () => {
     // Arrange: Define o retorno que o mock do Sequelize devera fornecer
     const usuariosFalsos = [
-      { id: 1, nome: 'Alice Santos', email: 'alice@fatec.sp.gov.br', createdAt: '2026-01-01' },
-      { id: 2, nome: 'Bob Silva', email: 'bob@fatec.sp.gov.br', createdAt: '2026-01-02' },
+      {
+        id: 1,
+        nome: 'Alice Santos',
+        email: 'alice@fatec.sp.gov.br',
+        createdAt: '2026-01-01',
+      },
+      {
+        id: 2,
+        nome: 'Bob Silva',
+        email: 'bob@fatec.sp.gov.br',
+        createdAt: '2026-01-02',
+      },
     ];
     vi.mocked(User.findAll).mockResolvedValue(usuariosFalsos as any);
 
