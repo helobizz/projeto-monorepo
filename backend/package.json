@@ -15,7 +15,7 @@
     "check-all": "pnpm run lint && pnpm run format:check",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:converage": "vitest run --converage"
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "",
