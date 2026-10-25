@@ -1,30 +1,39 @@
-# 1° passo: Define a imagem de origem base (pega uma imagem crua e cria configs em cima dela)
-FROM node:24-alpine
+# Estágio 1: Build da Aplicação
 
-# Configura diretório global do pnpm
-ENV PNPM_HOME="/root/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+# 1° passo: Define a imagem de origem base (pega uma imagem crua e cria configs em cima dela)
+FROM node:24-alpine AS builder
+
+# Insatalação do pnpm globalmente
+RUN corepack enable && corepack prepara pnpm@latest --activate
 
 # 2° Define o diretório de trabalho interno do container (vai ficar dentro do linux)
 WORKDIR /app
 
-# 3° Instalar o pnpm globalmente para gerenciar as dependências
-RUN npm install -g pnpm
+# Copia dos manifestos de dependências do backend
+COPY package.json pnpm.lock.yaml* ./
+
+# Instalação de todas as dependências (incluindo devDependencies para o build)
+RUN npm install --fronzen-lockfile
 
 # desativa a restrição do pnpm 11
 RUN pnpm config set strict-dep-builds false
 
-# 4° Copia apenas o manifesto de dependências
-COPY package.json ./
+# Copia do código-fonte e da configuração do TypeScript
+COPY tsconfig.json ./
+COPY src ./src
 
-# 5° Instalar as dependências do projeto
-RUN pnpm install 
+# Compilação do TypeScript para Javascript (gera a pasta dist/)
+RUN pnpm run build
 
-# 6° Copiar todo o restante do código (da raiz do projeto p raiz do programa)
-COPY . . 
+# Remoção das dependências de desenvolvimento para diminuir o tamanho final
+RUN pnpm prune --prod
 
-# 7° Expoõe a porta padrão LDW
-EXPOSE 3000
+# Estágio 2: Imagem Final de Execução (Produção)
+FROM node:24-alpine AS runner
 
-# 8° Comando para inicializar a aplicação 
-CMD ["pnpm", "dev"]
+WORKDIR /app
+
+# Definição do ambiente como produção
+
+ENV NODE_ENV=production
+ENV PORT=3000
