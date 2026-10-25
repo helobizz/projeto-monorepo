@@ -1,7 +1,5 @@
 # Projeto Monorepo FATEC
 
-a9044b2771adb71433096bdf091d46f68f5bf88d
-
 ## Teste Skip ci
 
 ![Status do CI](https://github.com/i-davies/projeto-monorepo/actions/workflows/ci.yml/badge.svg)
