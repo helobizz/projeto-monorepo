@@ -68,13 +68,12 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: 9. Executar Análise Estática com SonarQube
-        uses: sonarsource/sonarqube-scan-action@v4
+      - name: 9. Executar Análise Estática com SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL}}
 
       - name: 10. Validar SonarQube Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@v1
