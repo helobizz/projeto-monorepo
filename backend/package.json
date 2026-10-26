@@ -23,11 +23,11 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.20.0",
+      "version": "11.20.0",
       "onFail": "download"
     }
   },
-  "type": "module",
+  "type": "commonjs",
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@types/bcryptjs": "^3.0.0",
@@ -62,8 +62,9 @@
     "swagger-ui-express": "^5.0.1"
   },
   "pnpm": {
-    "ignoredBuiltDependencies": [
-      "@scarf/scarf"
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sqlite3"
     ]
   }
 }
