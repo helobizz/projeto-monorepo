@@ -11,9 +11,7 @@ export class AuthController {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        return res
-          .status(400)
-          .json({ erro: 'Email e senha são obrigatórios' });
+        return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
       }
 
       // Busca usuário no banco local
