@@ -1,15 +1,15 @@
 name: Monorepo CI Pipeline
 
 on:
-  # Dispara automaticamente ao enviar novos commits para a branche main
+  # Dispara automaticamente ao enviar novos commits para a branch main
   push:
     branches:
       - main
-  # Dispara na abertura ou atualização de Pull Request direcionados para a branch main
+  # Dispara na abertura ou atualização de Pull Requests direcionados para a branch main
   pull_request:
     branches:
       - main
-  # Permite execução manual pelo painel web do gitgub action
+  # Permite execução manual pelo painel web do Github Actions
   workflow_dispatch:
 
 # Permite cancelar execuções anteriores na mesma branch se novos commits forem enviados
@@ -26,7 +26,7 @@ jobs:
       NODE_ENV: test
 
     steps:
-      - name: 1.Baixar o código-fonte
+      - name: 1. Baixar o código-fonte
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Necessário para o SonarQube analisar o histórico de commits
@@ -46,12 +46,12 @@ jobs:
           cd backend
           pnpm install --frozen-lockfile
 
-      - name: 5. Validar Padronização de Código com ESlint
+      - name: 5. Validar Padronização de Código (ESLint)
         run: |
           cd backend
           pnpm run lint
 
-      - name: 6. Validar Formatação de Arquivos com o Prettier
+      - name: 6. Validar Formatação de Arquivos (Prettier)
         run: |
           cd backend
           pnpm run format:check
@@ -68,14 +68,23 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: 9. Executar Análise Estática com SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v5
+      - name: 9. Executar Análise Estática com SonarQube
+        uses: sonarsource/sonarqube-scan-action@v4
         with:
           projectBaseDir: backend
-          args: >
-            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: 10. Validar SonarQube Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@v1
+        with:
+          scanMetadataReportFile: backend/.scannerwork/report-task.txt
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: 11. Publicar Relatório de Cobertura no Resumo do Job
         if: always()
@@ -101,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Checkout do Código-fonte
+      - name: 1. Checkout do Código
         uses: actions/checkout@v4
 
       - name: 2. Testar se o Dockerfile Compila sem Erros
