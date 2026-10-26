@@ -102,7 +102,7 @@ describe('Testes de Integracao: Rotas de Usuarios (/api/users)', () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('erro');
       expect(response.body.erro).toBe(
-        'Os campos nome, email e senha são obrigatórios.',
+        'O campo nome é obrigatório.',
       );
     });
 

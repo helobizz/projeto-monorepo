@@ -14,7 +14,7 @@ export class UserController {
     } catch (error: any) {
       return res
         .status(500)
-        .json({ erro: 'Erro ao listar usuários.', detalhe: error.message });
+        .json({ erro: 'Erro ao listar usuários', detalhe: error.message });
     }
   }
 
@@ -25,7 +25,7 @@ export class UserController {
       if (isNaN(id) || id <= 0) {
         return res
           .status(400)
-          .json({ erro: 'O ID informado deve ser um núemero válido.' });
+          .json({ erro: 'O ID informado deve ser um numero valido.' });
       }
 
       const user = await User.findByPk(id, {
@@ -40,7 +40,7 @@ export class UserController {
     } catch (error: any) {
       return res
         .status(500)
-        .json({ erro: 'Erro ao buscar usuários.', detalhe: error.message });
+        .json({ erro: 'Erro ao buscar usuário', detalhe: error.message });
     }
   }
 
@@ -49,26 +49,26 @@ export class UserController {
     try {
       const { nome, email, password } = req.body;
 
-      if (!nome || !email || !password) {
-        return res
-          .status(400)
-          .json({ erro: 'Os campos nome, email e senha são obrigatórios.' });
+      if (nome === undefined || nome === null) {
+        return res.status(400).json({
+          erro: 'O campo nome é obrigatório.',
+        });
       }
 
-      if (!nome || typeof nome !== 'string' || nome.trim() === '') {
-        return res.status(400).json({ erro: 'O campo é obrigatório.' });
+      if (typeof nome !== 'string' || nome.trim() === '') {
+        return res.status(400).json({ erro: 'O campo nome é obrigatório.' });
       }
 
       // email (regex -> código que testa várias coisas ao mesmo tempo)
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email || !emailRegex.test(email.trim())) {
-        return res.status(400).json({ erro: 'Informe um e-mail válido.' });
+        return res.status(400).json({ erro: 'Informe um e-mail valido.' });
       }
 
       if (!password || typeof password !== 'string' || password.length < 6) {
         return res
           .status(400)
-          .json({ erro: 'A senha deve copngter no mínimo 6 caracteres.' });
+          .json({ erro: 'A senha deve conter no minimo 6 caracteres.' });
       }
 
       const userExistente = await User.findOne({
@@ -98,7 +98,7 @@ export class UserController {
     } catch (error: any) {
       return res
         .status(500)
-        .json({ erro: 'Erro ao cadastrar usuários.', detalhe: error.message });
+        .json({ erro: 'Erro ao cadastrar usuário', detalhe: error.message });
     }
   }
 
@@ -108,14 +108,50 @@ export class UserController {
       const { id } = req.params;
       const { nome, email } = req.body;
 
+      if (
+        isNaN(Number(id)) ||
+        Number(id) <= 0 ||
+        !Number.isInteger(Number(id))
+      ) {
+        return res
+          .status(400)
+          .json({ erro: 'O ID informado deve ser um numero valido.' });
+      }
+
       const user = await User.findByPk(Number(id));
 
       if (!user) {
         return res.status(404).json({ erro: 'Usuário não encontrado.' });
       }
 
+      if (
+        nome !== undefined &&
+        (typeof nome !== 'string' || nome.trim() === '')
+      ) {
+        return res.status(404).json({
+          erro: 'O campo nome deve ser um texto valido.',
+        });
+      }
+
+      if (email !== undefined) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (typeof email !== 'string' || !emailRegex.test(email.trim())) {
+          return res.status(400).json({ erro: 'Informe um e-mail valido.' });
+        }
+
+        const emailNormalizado = email.trim().toLowerCase();
+        const userExistente = await User.findOne({
+          where: { email: emailNormalizado },
+        });
+
+        if (userExistente && userExistente.id !== user.id) {
+          return res.status(400).json({ erro: 'Este e-mail já está em uso.' });
+        }
+
+        user.email = emailNormalizado;
+      }
+
       if (nome) user.nome = nome;
-      if (email) user.email = email;
 
       await user.save();
 
@@ -128,7 +164,7 @@ export class UserController {
     } catch (error: any) {
       return res
         .status(500)
-        .json({ erro: 'Erro ao atualizar usuários.', detalhe: error.message });
+        .json({ erro: 'Erro ao atualizar usuário', detalhe: error.message });
     }
   }
 
@@ -136,6 +172,16 @@ export class UserController {
   public static async delete(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
+
+      if (
+        isNaN(Number(id)) ||
+        Number(id) <= 0 ||
+        !Number.isInteger(Number(id))
+      ) {
+        return res
+          .status(400)
+          .json({ erro: 'O ID informado deve ser um numero valido.' });
+      }
 
       const user = await User.findByPk(Number(id));
 
@@ -150,7 +196,7 @@ export class UserController {
     } catch (error: any) {
       return res
         .status(500)
-        .json({ erro: 'Erro ao excluir usuário.', detalhe: error.message });
+        .json({ erro: 'Erro ao excluir usuário', detalhe: error.message });
     }
   }
 }

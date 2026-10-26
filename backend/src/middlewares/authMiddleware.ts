@@ -25,6 +25,6 @@ export function authMiddleware(
 
     return next();
   } catch {
-    return res.status(401).json({ erro: 'Token inválido ou expirado.' });
+    return res.status(401).json({ erro: 'Token invalido ou expirado.' });
   }
 }

@@ -13,7 +13,7 @@ export class AuthController {
       if (!email || !password) {
         return res
           .status(400)
-          .json({ erro: 'Email e senha são obrigatórios.' });
+          .json({ erro: 'Email e senha são obrigatórios' });
       }
 
       // Busca usuário no banco local
@@ -21,13 +21,13 @@ export class AuthController {
         where: { email: email.trim().toLowerCase() },
       });
       if (!user || !user.senha_hash) {
-        return res.status(401).json({ erro: 'Credenciais inválidas.' });
+        return res.status(401).json({ erro: 'Credenciais invalidas.' });
       }
 
       // Valida a senha comparando o texto puro com o hash
       const senhaValida = await bcrypt.compare(password, user.senha_hash);
       if (!senhaValida) {
-        return res.status(401).json({ erro: 'Credenciais inválidas.' });
+        return res.status(401).json({ erro: 'Credenciais invalidas.' });
       }
 
       // Gera o token JWT com validade de 1 hora
@@ -38,7 +38,7 @@ export class AuthController {
       );
 
       return res.status(200).json({
-        messagem: 'Login realizado com sucesso!',
+        mensagem: 'Login realizado com sucesso!',
         token,
       });
     } catch (error: any) {
